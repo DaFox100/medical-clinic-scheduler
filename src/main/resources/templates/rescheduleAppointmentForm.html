@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reschedule Appointment</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">Appointment Update</p>
+            <h1>Reschedule Appointment</h1>
+            <p class="hero-copy">Move the appointment to a different available slot while preserving the existing visit details.</p>
+        </div>
+        <a class="button secondary" th:href="@{/appointments}">Back to Appointments</a>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <p class="alert error" th:if="${error}" th:text="${error}"></p>
+
+            <div class="detail-grid">
+                <div><span class="detail-label">Patient</span><span th:text="${appointment.patient.fullName}"></span></div>
+                <div><span class="detail-label">Current Doctor</span><span th:text="${appointment.timeSlot.provider.fullName}"></span></div>
+                <div><span class="detail-label">Current Department</span><span th:text="${appointment.timeSlot.provider.department.name}"></span></div>
+                <div><span class="detail-label">Current Date</span><span th:text="${appointment.timeSlot.appointmentDate}"></span></div>
+                <div><span class="detail-label">Current Time</span><span th:text="${appointment.timeSlot.startTime + ' - ' + appointment.timeSlot.endTime}"></span></div>
+                <div><span class="detail-label">Reason</span><span th:text="${appointment.description}"></span></div>
+            </div>
+
+            <form class="form-grid single-form top-gap" th:action="@{/appointments/{id}/reschedule(id=${appointment.id})}" th:object="${rescheduleForm}" method="post">
+                <label class="full-width">
+                    New Time Slot
+                    <select th:field="*{timeSlotId}">
+                        <option value="">Select a new slot</option>
+                        <option th:each="slot : ${availableTimeSlots}"
+                                th:value="${slot.id}"
+                                th:text="${slot.appointmentDate + ' | ' + slot.startTime + ' - ' + slot.endTime + ' | ' + slot.provider.fullName + ' | ' + slot.provider.department.name}"></option>
+                    </select>
+                </label>
+
+                <div class="full-width actions">
+                    <button class="button primary" type="submit">Confirm Reschedule</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

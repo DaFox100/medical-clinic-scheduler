@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fox Medical Clinic</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Medical Clinic Scheduling</p>
+            <h1>Fox Medical Appointment Scheduler</h1>
+            <p class="hero-copy" th:if="${isPatientUser}">Review available clinic slots, then book and manage your own appointments without seeing other patient information.</p>
+            <p class="hero-copy" th:if="${isProviderUser}">Review upcoming slot availability and manage your own schedule alongside the appointments assigned to you.</p>
+            <p class="hero-copy" th:if="${isAdminUser}">Review the full clinic schedule across departments and use the operational tools needed to manage bookings and slot inventory.</p>
+        </div>
+        <div class="hero-actions">
+            <a class="button primary" th:href="@{/appointments/book}" th:text="${isPatientUser} ? 'Book My Appointment' : 'Create Appointment'"></a>
+            <a class="button secondary" th:if="${isProviderUser or isAdminUser}" th:href="@{/time-slots/manage}">Manage Time Slots</a>
+            <a class="button secondary" th:href="@{/appointments}" th:text="${isPatientUser} ? 'My Appointments' : 'View Schedule'"></a>
+            <form th:action="@{/logout}" method="post">
+                <button class="button secondary" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <div class="section-header">
+                <div>
+                    <h2>Department Schedule Board</h2>
+                    <p class="section-copy" th:if="${isProviderUser}">Click any configured slot to inspect it. In provider mode, empty slots inside your department can be opened and turned into available time.</p>
+                    <p class="section-copy" th:if="${!isProviderUser}">Click any configured slot to inspect it. Only available slots can be booked from the detail page.</p>
+                </div>
+            </div>
+
+            <form class="filter-bar" th:action="@{/}" method="get">
+                <label>
+                    Department
+                    <select name="department">
+                        <option value="">All Departments</option>
+                        <option th:each="department : ${departments}"
+                                th:value="${department}"
+                                th:selected="${department == selectedDepartment}"
+                                th:text="${department}"></option>
+                    </select>
+                </label>
+
+                <label>
+                    Start Date
+                    <input type="date" name="startDate" th:value="${selectedStartDate}">
+                </label>
+
+                <label>
+                    End Date
+                    <input type="date" name="endDate" th:value="${selectedEndDate}">
+                </label>
+
+                <div class="filter-actions">
+                    <button class="button primary" type="submit">Apply Filters</button>
+                    <a class="button secondary" th:href="@{/}">Reset</a>
+                </div>
+            </form>
+
+            <div class="legend-row">
+                <span class="legend-item"><span class="legend-swatch available"></span>Available</span>
+                <span class="legend-item"><span class="legend-swatch booked"></span>Unavailable</span>
+                <span class="legend-item"><span class="legend-swatch empty"></span>Empty</span>
+            </div>
+
+            <p class="empty-state" th:if="${#lists.isEmpty(scheduleView.departments)}">
+                No providers or time slots match the selected filters.
+            </p>
+
+            <div class="department-board" th:each="department : ${scheduleView.departments}">
+                <div class="department-header">
+                    <h3 th:text="${department.departmentName}"></h3>
+                </div>
+
+                <div class="provider-board" th:each="provider : ${department.providers}">
+                    <div class="provider-header">
+                        <h4 th:text="${provider.providerName}"></h4>
+                    </div>
+
+                    <div class="schedule-table-wrap">
+                        <table class="schedule-table">
+                            <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th th:each="dateHeader : ${scheduleView.dateHeaders}" th:text="${dateHeader}"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${provider.rows}">
+                                <th th:text="${row.timeLabel}"></th>
+                                <td th:each="cell : ${row.cells}">
+                                    <a th:if="${cell.slotClickable}"
+                                       class="schedule-cell"
+                                       th:classappend="${cell.status == 'AVAILABLE'} ? ' available' : ' booked'"
+                                       th:href="@{/time-slots/{id}(id=${cell.slotId})}">
+                                        <span class="cell-status" th:text="${cell.status == 'AVAILABLE'} ? 'Available' : 'Unavailable'"></span>
+                                        <span class="cell-provider" th:text="${cell.providerName}"></span>
+                                    </a>
+                                    <a th:if="${cell.emptyCreationAllowed}"
+                                       class="schedule-cell empty actionable"
+                                       th:href="@{/time-slots/manage(providerId=${cell.providerId}, appointmentDate=${cell.appointmentDateValue}, startTime=${cell.startTimeValue}, endTime=${cell.endTimeValue})}">
+                                        <span class="cell-status">Empty</span>
+                                        <span class="cell-provider">Set Available</span>
+                                    </a>
+                                    <div th:if="${!cell.slotClickable and !cell.emptyCreationAllowed}"
+                                         class="schedule-cell empty">
+                                        <span class="cell-status">Empty</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

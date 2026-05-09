@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Appointments</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">Clinic Operations</p>
+            <h1 th:text="${appointmentViewTitle}">Upcoming Appointments</h1>
+            <p class="hero-copy" th:text="${appointmentViewCopy}">Review the current schedule and add new visits from the same dashboard.</p>
+        </div>
+        <div class="hero-actions">
+            <a class="button primary" th:href="@{/appointments/book}">Book Appointment</a>
+            <form th:action="@{/logout}" method="post">
+                <button class="button secondary" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <div class="section-header">
+                <h2>Schedule</h2>
+                <a class="text-link" th:href="@{/}">Back to Home</a>
+            </div>
+
+            <p class="empty-state" th:if="${#lists.isEmpty(appointments)}">No appointments are scheduled yet.</p>
+
+            <table th:if="${!#lists.isEmpty(appointments)}">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th th:if="${!isPatientUser}">Patient</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Time Slot</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="appointment : ${appointments}">
+                    <td th:text="${appointment.id}"></td>
+                    <td th:if="${!isPatientUser}" th:text="${appointment.patient.fullName}"></td>
+                    <td th:text="${appointment.timeSlot.provider.fullName}"></td>
+                    <td th:text="${appointment.timeSlot.provider.department.name}"></td>
+                    <td th:text="${appointment.timeSlot.appointmentDate}"></td>
+                    <td th:text="${appointment.timeSlot.startTime + ' - ' + appointment.timeSlot.endTime}"></td>
+                    <td><span class="status-pill" th:text="${appointment.status}"></span></td>
+                    <td><a class="text-link" th:href="@{/appointments/{id}/reschedule(id=${appointment.id})}">Reschedule</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>

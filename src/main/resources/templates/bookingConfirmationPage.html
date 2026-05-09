@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmed</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">Confirmation</p>
+            <h1>Appointment Scheduled</h1>
+            <p class="hero-copy">The visit has been stored successfully in the clinic schedule.</p>
+        </div>
+        <a class="button secondary" th:href="@{/appointments}">View All Appointments</a>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <div class="section-header">
+                <h2>Visit Summary</h2>
+                <a class="text-link" th:href="@{/appointments/book}">Book Another</a>
+            </div>
+
+            <div class="slot-summary" th:if="${notificationResponse}">
+                <span class="detail-label">Mock Notification</span>
+                <strong th:text="${notificationResponse.status}"></strong>
+                <span th:text="${'Message ID: ' + notificationResponse.messageId}"></span>
+            </div>
+
+            <div class="detail-grid">
+                <div><span class="detail-label">Appointment ID</span><span th:text="${appointment.id}"></span></div>
+                <div><span class="detail-label">Patient</span><span th:text="${appointment.patient.fullName}"></span></div>
+                <div><span class="detail-label">Patient Email</span><span th:text="${appointment.patient.email}"></span></div>
+                <div><span class="detail-label">Doctor</span><span th:text="${appointment.timeSlot.provider.fullName}"></span></div>
+                <div><span class="detail-label">Department</span><span th:text="${appointment.timeSlot.provider.department.name}"></span></div>
+                <div><span class="detail-label">Date</span><span th:text="${appointment.timeSlot.appointmentDate}"></span></div>
+                <div><span class="detail-label">Time</span><span th:text="${appointment.timeSlot.startTime + ' - ' + appointment.timeSlot.endTime}"></span></div>
+                <div><span class="detail-label">Status</span><span th:text="${appointment.status}"></span></div>
+                <div><span class="detail-label">Reason</span><span th:text="${appointment.description}"></span></div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

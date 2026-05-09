@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">New Visit</p>
+            <h1>Book an Appointment</h1>
+            <p class="hero-copy">Capture the patient, provider, and visit details in one place.</p>
+        </div>
+        <a class="button secondary" th:href="@{/appointments}">View Schedule</a>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <div class="section-header">
+                <h2>Appointment Details</h2>
+                <a class="text-link" th:href="@{/}">Home</a>
+            </div>
+
+            <p class="alert error" th:if="${error}" th:text="${error}"></p>
+            <div class="slot-summary" th:if="${selectedTimeSlot}">
+                <span class="detail-label">Selected Slot</span>
+                <strong th:text="${selectedTimeSlot.appointmentDate + ' | ' + selectedTimeSlot.startTime + ' - ' + selectedTimeSlot.endTime}"></strong>
+                <span th:text="${selectedTimeSlot.provider.fullName + ' | ' + selectedTimeSlot.provider.department.name}"></span>
+            </div>
+
+            <form class="form-grid" th:action="@{/appointments/book}" th:object="${bookingForm}" method="post">
+                <label th:if="${!isPatientUser}">
+                    Patient
+                    <select th:field="*{patientId}">
+                        <option value="">Select a patient</option>
+                        <option th:each="patient : ${patients}"
+                                th:value="${patient.id}"
+                                th:text="${patient.fullName + ' (' + patient.email + ')'}"></option>
+                    </select>
+                </label>
+
+                <div class="slot-summary" th:if="${isPatientUser and currentPatient != null}">
+                    <span class="detail-label">Patient</span>
+                    <strong th:text="${currentPatient.fullName}"></strong>
+                    <span th:text="${currentPatient.email}"></span>
+                    <input type="hidden" th:field="*{patientId}">
+                </div>
+
+                <label>
+                    Available Time Slot
+                    <select th:field="*{timeSlotId}">
+                        <option value="">Select an available slot</option>
+                        <option th:each="slot : ${availableTimeSlots}"
+                                th:value="${slot.id}"
+                                th:text="${slot.appointmentDate + ' | ' + slot.startTime + ' - ' + slot.endTime + ' | ' + slot.provider.fullName + ' | ' + slot.provider.department.name}"></option>
+                    </select>
+                </label>
+
+                <label class="full-width">
+                    Reason for Appointment
+                    <textarea th:field="*{description}" rows="5" placeholder="Routine follow-up, lab review, or urgent concern."></textarea>
+                </label>
+
+                <div class="full-width actions">
+                    <button class="button primary" type="submit">Save Appointment</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Slot Details</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">Time Slot</p>
+            <h1>Slot Details</h1>
+            <p class="hero-copy">Review the provider, department, and schedule status before continuing.</p>
+        </div>
+        <a class="button secondary" th:href="@{/}">Back to Home</a>
+    </header>
+
+    <main class="content-grid single-column">
+        <section class="panel">
+            <div class="detail-grid">
+                <div><span class="detail-label">Provider</span><span th:text="${timeSlot.provider.fullName}"></span></div>
+                <div><span class="detail-label">Department</span><span th:text="${timeSlot.provider.department.name}"></span></div>
+                <div><span class="detail-label">Date</span><span th:text="${timeSlot.appointmentDate}"></span></div>
+                <div><span class="detail-label">Time</span><span th:text="${timeSlot.startTime + ' - ' + timeSlot.endTime}"></span></div>
+                <div><span class="detail-label">Status</span><span th:text="${timeSlot.status}"></span></div>
+                <div><span class="detail-label">Slot ID</span><span th:text="${timeSlot.id}"></span></div>
+            </div>
+
+            <div class="slot-actions">
+                <a th:if="${canBook}"
+                   class="button primary"
+                   th:href="@{/appointments/book(timeSlotId=${timeSlot.id})}">
+                    Book Appointment
+                </a>
+                <p class="empty-state" th:if="${!canBook}">
+                    This slot is not available for booking.
+                </p>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell auth-shell">
+    <section class="panel auth-panel">
+        <p class="eyebrow">Medical Clinic Scheduling</p>
+        <h1>Sign In</h1>
+        <p class="hero-copy">Use one of the seeded demo accounts to access the scheduler.</p>
+
+        <p class="alert error" th:if="${param.error}">Invalid username or password.</p>
+        <p class="alert success" th:if="${param.logout}">You have been signed out.</p>
+
+        <form class="form-grid single-form" th:action="@{/login}" method="post">
+            <label class="full-width">
+                Username
+                <input type="text" name="username" autocomplete="username">
+            </label>
+
+            <label class="full-width">
+                Password
+                <input type="password" name="password" autocomplete="current-password">
+            </label>
+
+            <div class="full-width actions">
+                <button class="button primary" type="submit">Login</button>
+            </div>
+        </form>
+
+        <div class="demo-credentials">
+            <span class="detail-label">Demo Accounts</span>
+            <p><strong>Admin:</strong> admin / password</p>
+            <p><strong>Provider:</strong> provider.patel / password</p>
+            <p><strong>Patient:</strong> patient.jane / password</p>
+        </div>
+    </section>
+</div>
+</body>
+</html>

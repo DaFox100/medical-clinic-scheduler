@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Time Slots</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="page-shell page-shell-wide">
+    <header class="hero compact">
+        <div>
+            <p class="eyebrow">Scheduling Admin</p>
+            <h1>Manage Time Slots</h1>
+            <p class="hero-copy">Create provider slots, set availability, and remove unused slots from the schedule inventory.</p>
+        </div>
+        <div class="hero-actions">
+            <a class="button secondary" th:href="@{/}">Home</a>
+            <a class="button secondary" th:href="@{/appointments}">Appointments</a>
+            <form th:action="@{/logout}" method="post">
+                <button class="button secondary" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="content-grid management-grid">
+        <section class="panel">
+            <div class="section-header">
+                <h2>Create Slot</h2>
+            </div>
+
+            <p class="alert error" th:if="${error}" th:text="${error}"></p>
+            <p class="alert success" th:if="${successMessage}" th:text="${successMessage}"></p>
+            <p class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+            <div class="slot-summary full-width" th:if="${prefilledFromSchedule}">
+                <span class="detail-label">Selected Schedule Spot</span>
+                <strong th:text="${timeSlotForm.appointmentDate}"></strong>
+                <span th:text="${timeSlotForm.startTime + ' - ' + timeSlotForm.endTime}"></span>
+            </div>
+
+            <form class="form-grid" th:action="@{/time-slots/manage}" th:object="${timeSlotForm}" method="post">
+                <label class="full-width">
+                    Provider
+                    <select th:field="*{providerId}">
+                        <option value="">Select provider</option>
+                        <option th:each="provider : ${providers}"
+                                th:value="${provider.id}"
+                                th:text="${provider.fullName + ' | ' + provider.department.name}"></option>
+                    </select>
+                </label>
+
+                <div class="slot-summary full-width" th:if="${isProviderUser and currentProvider != null}">
+                    <span class="detail-label">Department Scope</span>
+                    <strong th:text="${currentProvider.department.name}"></strong>
+                    <span>Provider accounts can create available slots for providers in their own department from the home schedule.</span>
+                </div>
+
+                <label>
+                    Date
+                    <input type="date"
+                           id="appointmentDate"
+                           name="appointmentDate"
+                           th:value="${timeSlotForm.appointmentDate != null ? #temporals.format(timeSlotForm.appointmentDate, 'yyyy-MM-dd') : ''}">
+                </label>
+
+                <label>
+                    Status
+                    <select th:field="*{status}">
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status}"></option>
+                    </select>
+                </label>
+
+                <label>
+                    Start Time
+                    <input type="time"
+                           id="startTime"
+                           name="startTime"
+                           th:value="${timeSlotForm.startTime != null ? #temporals.format(timeSlotForm.startTime, 'HH:mm') : ''}">
+                </label>
+
+                <label>
+                    End Time
+                    <input type="time"
+                           id="endTime"
+                           name="endTime"
+                           th:value="${timeSlotForm.endTime != null ? #temporals.format(timeSlotForm.endTime, 'HH:mm') : ''}">
+                </label>
+
+                <div class="full-width actions">
+                    <button class="button primary" type="submit">Create Time Slot</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel management-table-panel">
+            <div class="section-header">
+                <h2>Existing Slots</h2>
+            </div>
+
+            <p class="empty-state" th:if="${#lists.isEmpty(timeSlots)}">No time slots exist yet.</p>
+
+            <div class="table-scroll" th:if="${!#lists.isEmpty(timeSlots)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Provider</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="slot : ${timeSlots}">
+                    <td th:text="${slot.id}"></td>
+                    <td th:text="${slot.provider.fullName}"></td>
+                    <td th:text="${slot.provider.department.name}"></td>
+                    <td th:text="${slot.appointmentDate}"></td>
+                    <td th:text="${slot.startTime + ' - ' + slot.endTime}"></td>
+                    <td><span class="status-pill" th:text="${slot.status}"></span></td>
+                    <td class="slot-action-cell">
+                        <form class="inline-form" th:action="@{/time-slots/{id}/status(id=${slot.id})}" method="post">
+                            <select name="status">
+                                <option th:each="status : ${statuses}"
+                                        th:value="${status}"
+                                        th:selected="${status == slot.status}"
+                                        th:text="${status}"></option>
+                            </select>
+                            <button class="button secondary small-button" type="submit">Update</button>
+                        </form>
+                        <form class="inline-form" th:action="@{/time-slots/{id}/delete(id=${slot.id})}" method="post">
+                            <button class="button danger small-button" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
