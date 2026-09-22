@@ -28,18 +28,18 @@ public class AppointmentBookingService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final TimeSlotRepository timeSlotRepository;
-    private final ConfirmationPageService confirmationPageService;
+    private final NotificationOutbox notificationOutbox;
     private final CurrentUserService currentUserService;
 
     public AppointmentBookingService(AppointmentRepository appointmentRepository,
                                      PatientRepository patientRepository,
                                      TimeSlotRepository timeSlotRepository,
-                                     ConfirmationPageService confirmationPageService,
+                                     NotificationOutbox notificationOutbox,
                                      CurrentUserService currentUserService) {
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.timeSlotRepository = timeSlotRepository;
-        this.confirmationPageService = confirmationPageService;
+        this.notificationOutbox = notificationOutbox;
         this.currentUserService = currentUserService;
     }
 
@@ -89,12 +89,8 @@ public class AppointmentBookingService {
                     savedAppointment.getPatient().getId(),
                     savedAppointment.getTimeSlot().getProvider().getId(),
                     System.currentTimeMillis() - started);
-            NotificationResponse notificationResponse = confirmationPageService.sendConfirmation(savedAppointment);
-            logger.info("event=notification_sent appointmentId={} status={} messageId={} message=\"Mock confirmation notification sent\"",
-                    savedAppointment.getId(),
-                    notificationResponse.getStatus(),
-                    notificationResponse.getMessageId());
-            return new AppointmentBookingResult(savedAppointment, notificationResponse);
+            notificationOutbox.enqueue(savedAppointment);
+            return new AppointmentBookingResult(savedAppointment, new NotificationResponse("QUEUED", null));
         } catch (DataIntegrityViolationException exception) {
             logger.error("event=appointment_booking_failed slotId={} reason=constraint_collision message=\"Appointment booking failed during persistence\"",
                     form.getTimeSlotId(), exception);

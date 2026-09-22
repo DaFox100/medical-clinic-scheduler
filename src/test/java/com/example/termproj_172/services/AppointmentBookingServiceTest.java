@@ -6,7 +6,6 @@ import com.example.termproj_172.domainModels.AppointmentBookingResult;
 import com.example.termproj_172.domainModels.AppUser;
 import com.example.termproj_172.domainModels.AppUserRole;
 import com.example.termproj_172.domainModels.Department;
-import com.example.termproj_172.domainModels.NotificationResponse;
 import com.example.termproj_172.domainModels.Patient;
 import com.example.termproj_172.domainModels.Provider;
 import com.example.termproj_172.domainModels.TimeSlot;
@@ -28,7 +27,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +44,7 @@ class AppointmentBookingServiceTest {
     private TimeSlotRepository timeSlotRepository;
 
     @Mock
-    private ConfirmationPageService confirmationPageService;
+    private NotificationOutbox notificationOutbox;
 
     @Mock
     private CurrentUserService currentUserService;
@@ -94,7 +92,7 @@ class AppointmentBookingServiceTest {
     }
 
     @Test
-    void returnsNotificationResponseWhenBookingSucceeds() {
+    void queuesNotificationWhenBookingSucceeds() {
         AppointmentBookingForm form = buildForm();
         Patient patient = buildPatient();
         TimeSlot timeSlot = buildTimeSlot();
@@ -104,19 +102,18 @@ class AppointmentBookingServiceTest {
         savedAppointment.setTimeSlot(timeSlot);
         savedAppointment.setDescription("Follow up");
         savedAppointment.setStatus("Scheduled");
-        NotificationResponse notificationResponse = new NotificationResponse("SENT", "MSG-001");
 
         when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(timeSlotRepository.claimSlotIfAvailable(10L, TimeSlotStatus.AVAILABLE, TimeSlotStatus.BOOKED)).thenReturn(1);
         when(timeSlotRepository.findById(10L)).thenReturn(Optional.of(timeSlot));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(savedAppointment);
-        when(confirmationPageService.sendConfirmation(savedAppointment)).thenReturn(notificationResponse);
+
 
         AppointmentBookingResult result = appointmentBookingService.bookAppointment(form, buildAdminUser());
 
         assertEquals(99L, result.getAppointment().getId());
-        assertEquals("SENT", result.getNotificationResponse().getStatus());
-        assertEquals("MSG-001", result.getNotificationResponse().getMessageId());
+        assertEquals("QUEUED", result.getNotificationResponse().getStatus());
+        verify(notificationOutbox).enqueue(savedAppointment);
     }
 
     private AppointmentBookingForm buildForm() {

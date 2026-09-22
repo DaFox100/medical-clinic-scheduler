@@ -25,9 +25,10 @@
             </div>
 
             <div class="slot-summary" th:if="${notificationResponse}">
-                <span class="detail-label">Mock Notification</span>
+                <span class="detail-label">Confirmation Notification</span>
                 <strong th:text="${notificationResponse.status}"></strong>
-                <span th:text="${'Message ID: ' + notificationResponse.messageId}"></span>
+                <span th:if="${notificationResponse.messageId != null}" th:text="${'Message ID: ' + notificationResponse.messageId}"></span>
+                <span th:if="${notificationResponse.status == 'QUEUED'}">Your appointment is saved. Confirmation delivery is pending.</span>
             </div>
 
             <div class="detail-grid">

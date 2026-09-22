@@ -21,15 +21,20 @@ public class ConfirmationPageService {
     }
 
     public NotificationResponse sendConfirmation(Appointment appointment) {
-        AppointmentConfirmationDTO dto = buildDto(appointment);
+        return sendConfirmation(buildDto(appointment), "appointment-" + appointment.getId());
+    }
+
+    public NotificationResponse sendConfirmation(AppointmentConfirmationDTO dto, String eventId) {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("Idempotency-Key", eventId);
         ResponseEntity<NotificationResponse> response = restTemplate.postForEntity(
                 notificationBaseUrl + "/mock-notification/send-confirmation",
-                dto,
+                new org.springframework.http.HttpEntity<>(dto, headers),
                 NotificationResponse.class
         );
 
         NotificationResponse body = response.getBody();
-        if (body == null) {
+        if (body == null || !"SENT".equals(body.getStatus())) {
             throw new IllegalStateException("Mock notification service returned an empty response.");
         }
 

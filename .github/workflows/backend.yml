@@ -1,0 +1,37 @@
+name: Backend verification
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  mysql-integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: integration
+          MYSQL_DATABASE: medical_clinic_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pintegration"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Unit tests, migrations, and MySQL integration tests
+        env:
+          TEST_DB_PASSWORD: integration
+        run: ./mvnw -B -Pintegration verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-evidence
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/concurrency-results.json

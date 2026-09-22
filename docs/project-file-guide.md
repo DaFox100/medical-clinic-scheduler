@@ -165,7 +165,7 @@ The current primary roles are:
   Provides role-aware appointment retrieval and appointment-view text for the appointments page.
 
 - [ConfirmationPageService.java](/Users/michaelfox/Documents/SJSU/CMPE172/TermProj_172/src/main/java/com/example/termproj_172/services/ConfirmationPageService.java)
-  Sends appointment confirmation data to the mock notification endpoint.
+  Builds confirmation snapshots and sends them to the mock notification endpoint when invoked by the outbox dispatcher.
 
 - [CurrentUserService.java](/Users/michaelfox/Documents/SJSU/CMPE172/TermProj_172/src/main/java/com/example/termproj_172/services/CurrentUserService.java)
   Resolves the authenticated `AppUser` and exposes helper methods like `isAdmin`, `isProvider`, and `isPatient`.
@@ -234,7 +234,7 @@ Important settings in this file:
 - `spring.datasource.*`
   Connects the app to MySQL.
 
-- `spring.jpa.hibernate.ddl-auto=update`
+- `spring.jpa.hibernate.ddl-auto=validate`
   Lets Hibernate update the schema to match entities.
 
 - `spring.jpa.show-sql=true`
